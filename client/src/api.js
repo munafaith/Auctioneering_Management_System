@@ -23,3 +23,18 @@ export async function api(path, { method = "GET", body, form } = {}) {
   if (!res.ok) throw new Error(data.message || "Something went wrong");
   return data;
 }
+
+// Download a case document (the file route needs the login token)
+export async function downloadDocument(caseId, filename, originalName) {
+  const res = await fetch(`/api/instructions/${caseId}/documents/${filename}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!res.ok) throw new Error("Could not open the document");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = originalName;
+  a.click();
+  URL.revokeObjectURL(url);
+}
