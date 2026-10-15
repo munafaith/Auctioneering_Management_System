@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ClientHome from "./pages/ClientHome";
 import AdminHome from "./pages/AdminHome";
+import NewInstruction from "./pages/NewInstruction";
 
 export default function App() {
   return (
@@ -16,6 +17,12 @@ export default function App() {
         path="/client"
         element={<ProtectedRoute roles={["client"]}><ClientHome /></ProtectedRoute>}
       />
+      
+      <Route
+        path="/client/new"
+        element={<ProtectedRoute roles={["client"]}><NewInstruction /></ProtectedRoute>}
+      />
+
       <Route
         path="/admin"
         element={<ProtectedRoute roles={["admin"]}><AdminHome /></ProtectedRoute>}
