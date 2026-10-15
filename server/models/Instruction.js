@@ -47,6 +47,12 @@ const instructionSchema = new mongoose.Schema(
     auctionEnd: Date,
     reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     rejectionReason: String,
+        lotNumber: { type: String, unique: true, sparse: true },
+    currentBid: { type: Number, default: 0 },
+    bidCount: { type: Number, default: 0 },
+    leadingBidder: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+
+
   },
   { timestamps: true }
 );

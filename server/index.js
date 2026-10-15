@@ -11,6 +11,8 @@ app.use("/api/auth", require("./routes/auth"));
 
 app.use("/api/instructions", require("./routes/instructions"));
 
+app.use("/api/lots", require("./routes/lots"));
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", app: "LotLink API" });
 });
@@ -27,6 +29,7 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
+        require("./utils/auctionClock")();  
     app.listen(PORT, () => console.log(`LotLink server running on port ${PORT}`));
   })
   .catch((err) => {

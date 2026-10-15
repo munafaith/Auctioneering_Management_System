@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 const path = require("path");
 
-
 const express = require("express");
 const Instruction = require("../models/Instruction");
 const { protect, restrictTo } = require("../middleware/auth");
 const upload = require("../middleware/upload");
 const nextCaseRef = require("../utils/caseRef");
+const nextLotNumber = require("../utils/lotNumber");
 
 const router = express.Router();
 
@@ -139,6 +139,8 @@ router.patch("/:id/approve", protect, restrictTo("admin"), validId, async (req, 
     return res.status(400).json({ message: "Auction end must be after the start" });
   }
 
+  const lotNumber = await nextLotNumber();
+
   const instruction = await Instruction.findOneAndUpdate(
     { _id: req.params.id, status: { $in: ["submitted", "under_review"] } },
     {
@@ -147,6 +149,7 @@ router.patch("/:id/approve", protect, restrictTo("admin"), validId, async (req, 
       minIncrement: increment,
       auctionStart: start,
       auctionEnd: end,
+      lotNumber: lotNumber,
       reviewedBy: req.user._id,
     },
     { new: true }
