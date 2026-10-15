@@ -9,9 +9,17 @@ app.use(express.json());
 
 app.use("/api/auth", require("./routes/auth"));
 
+app.use("/api/instructions", require("./routes/instructions"));
+
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", app: "LotLink API" });
 });
+
+app.use((err, req, res, next) => {
+  const status = err.name === "MulterError" ? 400 : err.status || 500;
+  res.status(status).json({ message: err.message });
+});
+
 
 const PORT = process.env.PORT || 5000;
 
