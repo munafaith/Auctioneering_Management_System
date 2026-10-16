@@ -83,7 +83,7 @@ router.get("/", protect, restrictTo("admin"), async (req, res) => {
   const filter = req.query.status ? { status: req.query.status } : {};
   const [instructions, active, pendingReview, live, pendingHandover] = await Promise.all([
     Instruction.find(filter).populate("client", "name organization").sort({ createdAt: -1 }),
-    Instruction.countDocuments({ status: { $nin: ["completed", "rejected"] } }),
+    Instruction.countDocuments({ status: { $nin: ["completed", "rejected", "unsold"] } }),
     Instruction.countDocuments({ status: { $in: ["submitted", "under_review"] } }),
     Instruction.countDocuments({ status: "live" }),
     Instruction.countDocuments({ status: { $in: ["closed", "payment_cleared"] } }),

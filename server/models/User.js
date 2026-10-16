@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema(
     organization: { type: String, trim: true }, // clients: the bank or institution
     staffTitle: { type: String, trim: true },   // admins: Valuer, Finance Officer, etc.
     isVerified: { type: Boolean, default: false }, // bidders get verified by an admin
+    bidderNo: Number, // public alias number, shown as "Bidder #101"  
   },
   { timestamps: true }
 );

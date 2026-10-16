@@ -16,6 +16,7 @@ const userPayload = (u) => ({
   organization: u.organization,
   staffTitle: u.staffTitle,
   isVerified: u.isVerified,
+  bidderNo: u.bidderNo,
 });
 
 // Public sign up: only clients and bidders. Admins are created by a seed script.

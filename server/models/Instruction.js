@@ -22,7 +22,7 @@ const instructionSchema = new mongoose.Schema(
       type: String,
       enum: [
         "draft", "submitted", "under_review", "rejected", "scheduled", "live",
-        "closed", "payment_cleared", "handed_over", "completed",
+        "closed", "unsold", "payment_cleared", "handed_over", "completed",
       ],
       default: "submitted",
     },
@@ -51,6 +51,8 @@ const instructionSchema = new mongoose.Schema(
     currentBid: { type: Number, default: 0 },
     bidCount: { type: Number, default: 0 },
     leadingBidder: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    winner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    winningBid: Number,
 
 
   },

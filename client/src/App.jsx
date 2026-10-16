@@ -7,11 +7,13 @@ import ClientHome from "./pages/ClientHome";
 import AdminHome from "./pages/AdminHome";
 import NewInstruction from "./pages/NewInstruction";
 import CaseReview from "./pages/CaseReview";
+import LotDetail from "./pages/LotDetail";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      <Route path="/lots/:id" element={<LotDetail />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
