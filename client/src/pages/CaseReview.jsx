@@ -3,7 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { api, downloadDocument } from "../api";
 import AdminLayout from "../components/AdminLayout";
 import StatusBadge from "../components/StatusBadge";
-import { kes, categoryLabel } from "../utils";
+import DateTimeField from "../components/DateTimeField";
+import { kes, categoryLabel, dateTime } from "../utils";
 
 const docLabel = {
   repossession_warrant: "Repossession Warrant",
@@ -12,10 +13,12 @@ const docLabel = {
   other: "Other Document",
 };
 
-const dateTime = (d) =>
-  new Date(d).toLocaleString("en-KE", {
-    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
-  });
+// Turns a stored time into the "YYYY-MM-DDTHH:mm" text the date and time field uses
+const toLocalInput = (d) => {
+  const x = new Date(d);
+  x.setMinutes(x.getMinutes() - x.getTimezoneOffset());
+  return x.toISOString().slice(0, 16);
+};
 
 const inputClass = "mt-1 w-full rounded border border-slate-300 bg-white p-2";
 const labelClass = "block text-sm font-medium text-slate-700";
@@ -37,6 +40,8 @@ export default function CaseReview() {
   const [d, setD] = useState({ approvedReserve: "", minIncrement: "", auctionStart: "", auctionEnd: "" });
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [edit, setEdit] = useState({});
 
   const load = async () => {
     const { instruction } = await api(`/instructions/${id}`);
@@ -63,6 +68,7 @@ export default function CaseReview() {
   }, [id]);
 
   const set = (field) => (e) => setD({ ...d, [field]: e.target.value });
+  const setEditField = (field) => (e) => setEdit({ ...edit, [field]: e.target.value });
 
   const approve = async (e) => {
     e.preventDefault();
@@ -92,6 +98,46 @@ export default function CaseReview() {
     try {
       await api(`/instructions/${id}/reject`, { method: "PATCH", body: { reason } });
       setRejecting(false);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const startEdit = () => {
+    setError("");
+    setEdit({
+      approvedReserve: c.approvedReserve,
+      minIncrement: c.minIncrement,
+      auctionStart: toLocalInput(c.auctionStart),
+      auctionEnd: toLocalInput(c.auctionEnd),
+      description: c.description,
+      registration: c.registration || "",
+      yardLocation: c.yardLocation,
+    });
+    setEditing(true);
+  };
+
+  const saveEdit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setBusy(true);
+    try {
+      await api(`/instructions/${id}/schedule`, {
+        method: "PATCH",
+        body: {
+          approvedReserve: Number(edit.approvedReserve),
+          minIncrement: Number(edit.minIncrement),
+          auctionStart: new Date(edit.auctionStart).toISOString(),
+          auctionEnd: new Date(edit.auctionEnd).toISOString(),
+          description: edit.description,
+          registration: edit.registration,
+          yardLocation: edit.yardLocation,
+        },
+      });
+      setEditing(false);
       await load();
     } catch (err) {
       setError(err.message);
@@ -158,9 +204,12 @@ export default function CaseReview() {
           </ul>
         </section>
 
-        <aside className="rounded-xl border bg-white p-6">
-          <h2 className="mb-4 font-semibold text-slate-900">Admin Determination</h2>
+        <aside className="h-fit rounded-xl border bg-white p-6">
+          <h2 className="mb-4 font-semibold text-slate-900">
+            {c.status === "scheduled" && editing ? "Edit Lot & Schedule" : "Admin Determination"}
+          </h2>
 
+          {/* New case: approve or reject */}
           {decidable && (
             <>
               <form onSubmit={approve}>
@@ -171,10 +220,14 @@ export default function CaseReview() {
                 <input type="number" min="1" required value={d.minIncrement} onChange={set("minIncrement")} placeholder="e.g. 50000" className={`${inputClass} mb-4`} />
 
                 <label className={labelClass}>Auction Starts</label>
-                <input type="datetime-local" required value={d.auctionStart} onChange={set("auctionStart")} className={`${inputClass} mb-4`} />
+                <div className="mb-4">
+                  <DateTimeField required value={d.auctionStart} onChange={(v) => setD((p) => ({ ...p, auctionStart: v }))} />
+                </div>
 
                 <label className={labelClass}>Auction Ends</label>
-                <input type="datetime-local" required value={d.auctionEnd} onChange={set("auctionEnd")} className={`${inputClass} mb-4`} />
+                <div className="mb-4">
+                  <DateTimeField required value={d.auctionEnd} onChange={(v) => setD((p) => ({ ...p, auctionEnd: v }))} />
+                </div>
 
                 <button disabled={busy} className="w-full rounded bg-green-600 p-2 font-semibold text-white disabled:opacity-50">
                   Approve &amp; Schedule Lot
@@ -209,13 +262,68 @@ export default function CaseReview() {
             </p>
           )}
 
-          {!decidable && c.status !== "rejected" && (
+          {/* Decided: read-only summary */}
+          {!decidable && c.status !== "rejected" && !editing && (
             <div className="text-sm">
-              <Row label="Approved Reserve">{c.approvedReserve ? kes(c.approvedReserve) : ""}</Row>
+              <Row label="Lot Number">{c.lotNumber}</Row>
+              <Row label="Approved Reserve / Starting Bid">{c.approvedReserve ? kes(c.approvedReserve) : ""}</Row>
               <Row label="Minimum Increment">{c.minIncrement ? kes(c.minIncrement) : ""}</Row>
               <Row label="Auction Starts">{c.auctionStart ? dateTime(c.auctionStart) : ""}</Row>
               <Row label="Auction Ends">{c.auctionEnd ? dateTime(c.auctionEnd) : ""}</Row>
+
+              {c.status === "scheduled" ? (
+                <button
+                  onClick={startEdit}
+                  className="w-full rounded border border-slate-400 p-2 font-semibold text-slate-800 hover:bg-slate-50"
+                >
+                  Edit schedule &amp; details
+                </button>
+              ) : (
+                <p className="text-xs text-slate-500">
+                  The price rules and times are locked once bidding has opened.
+                </p>
+              )}
             </div>
+          )}
+
+          {/* Editing a scheduled lot */}
+          {c.status === "scheduled" && editing && (
+            <form onSubmit={saveEdit}>
+              <label className={labelClass}>Approved Reserve / Starting Bid (KES)</label>
+              <input type="number" min="1" required value={edit.approvedReserve} onChange={setEditField("approvedReserve")} className={`${inputClass} mb-4`} />
+
+              <label className={labelClass}>Minimum Bid Increment (KES)</label>
+              <input type="number" min="1" required value={edit.minIncrement} onChange={setEditField("minIncrement")} className={`${inputClass} mb-4`} />
+
+              <label className={labelClass}>Auction Starts</label>
+              <div className="mb-4">
+                <DateTimeField required value={edit.auctionStart} onChange={(v) => setEdit((p) => ({ ...p, auctionStart: v }))} />
+              </div>
+
+              <label className={labelClass}>Auction Ends</label>
+              <div className="mb-4">
+                <DateTimeField required value={edit.auctionEnd} onChange={(v) => setEdit((p) => ({ ...p, auctionEnd: v }))} />
+              </div>
+
+              <p className="mb-2 mt-2 text-xs uppercase text-slate-500">Asset details</p>
+              <label className={labelClass}>Description</label>
+              <input required value={edit.description} onChange={setEditField("description")} className={`${inputClass} mb-4`} />
+
+              <label className={labelClass}>Registration</label>
+              <input value={edit.registration} onChange={setEditField("registration")} className={`${inputClass} mb-4`} />
+
+              <label className={labelClass}>Location</label>
+              <input required value={edit.yardLocation} onChange={setEditField("yardLocation")} className={`${inputClass} mb-4`} />
+
+              <div className="flex gap-2">
+                <button disabled={busy} className="flex-1 rounded bg-slate-900 p-2 font-semibold text-white disabled:opacity-50">
+                  Save changes
+                </button>
+                <button type="button" onClick={() => setEditing(false)} className="rounded border px-3">
+                  Cancel
+                </button>
+              </div>
+            </form>
           )}
         </aside>
       </div>

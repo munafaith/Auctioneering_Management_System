@@ -194,4 +194,53 @@ router.get("/:id/documents/:filename", protect, validId, async (req, res) => {
   res.download(path.join(__dirname, "..", "uploads", doc.filename), doc.originalName);
 });
 
+// Admin edits a scheduled lot. Only allowed before bidding opens.
+router.patch("/:id/schedule", protect, restrictTo("admin"), validId, async (req, res) => {
+  const {
+    approvedReserve, minIncrement, auctionStart, auctionEnd,
+    description, registration, yardLocation,
+  } = req.body ?? {};
+
+  const reserve = Number(approvedReserve);
+  const increment = Number(minIncrement);
+  const start = new Date(auctionStart);
+  const end = new Date(auctionEnd);
+
+  if (!(reserve > 0) || !(increment > 0) || isNaN(start) || isNaN(end)) {
+    return res.status(400).json({
+      message: "Reserve price, minimum increment, auction start and auction end are required",
+    });
+  }
+  if (start <= new Date()) {
+    return res.status(400).json({ message: "Auction start must be in the future" });
+  }
+  if (end <= start) {
+    return res.status(400).json({ message: "Auction end must be after the start" });
+  }
+
+  const changes = {
+    approvedReserve: reserve,
+    minIncrement: increment,
+    auctionStart: start,
+    auctionEnd: end,
+  };
+  if (typeof description === "string" && description.trim()) changes.description = description.trim();
+  if (typeof registration === "string") changes.registration = registration.trim();
+  if (typeof yardLocation === "string" && yardLocation.trim()) changes.yardLocation = yardLocation.trim();
+
+  // The status check is part of the update itself, so a lot that has just
+  // gone live a moment ago can no longer be changed.
+  const instruction = await Instruction.findOneAndUpdate(
+    { _id: req.params.id, status: "scheduled" },
+    changes,
+    { new: true }
+  );
+  if (!instruction) {
+    return res.status(409).json({
+      message: "Only a scheduled lot that has not opened for bidding can be edited",
+    });
+  }
+  res.json({ instruction });
+});
+
 module.exports = router;

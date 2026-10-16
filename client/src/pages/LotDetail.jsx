@@ -5,17 +5,13 @@ import { api } from "../api";
 import { useAuth } from "../AuthContext";
 import PublicLayout from "../components/PublicLayout";
 import Countdown from "../components/Countdown";
-import { kes, categoryLabel } from "../utils";
+import { kes, categoryLabel, dateTime, timeOnly } from "../utils";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
-const dateTime = (d) =>
-  new Date(d).toLocaleString("en-KE", {
-    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
-  });
 
-const timeOnly = (d) =>
-  new Date(d).toLocaleTimeString("en-KE", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+
 
 function Fact({ label, children }) {
   return (

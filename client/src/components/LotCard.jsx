@@ -1,11 +1,6 @@
 import { Link } from "react-router-dom";
-import { kes, categoryLabel } from "../utils";
+import { kes, categoryLabel, dateTimeShort } from "../utils";
 import Countdown from "./Countdown";
-
-const dateTime = (d) =>
-  new Date(d).toLocaleString("en-KE", {
-    day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
-  });
 
 export default function LotCard({ lot, offset }) {
   const live = lot.status === "live";
@@ -40,7 +35,7 @@ export default function LotCard({ lot, offset }) {
             {live ? (
               <>Ends in <Countdown target={lot.auctionEnd} offset={offset} /></>
             ) : (
-              <>Starts {dateTime(lot.auctionStart)}</>
+              <>Starts {dateTimeShort(lot.auctionStart)}</>
             )}
           </p>
         </div>
