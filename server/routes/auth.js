@@ -21,7 +21,7 @@ const userPayload = (u) => ({
 
 // Public sign up: only clients and bidders. Admins are created by a seed script.
 router.post("/register", async (req, res) => {
-  const { name, email, password, role, phone, organization } = req.body ?? {};
+  const { name, email, password, role, phone, organization, idNumber, acceptTerms } = req.body ?? {};
 
   if (!["client", "bidder"].includes(role)) {
     return res.status(400).json({ message: "Role must be client or bidder" });
@@ -29,11 +29,26 @@ router.post("/register", async (req, res) => {
   if (!name || !email || !password) {
     return res.status(400).json({ message: "Name, email and password are required" });
   }
+
+  // Bidders must give an ID for the firm to check, and accept the auction terms
+  const bidderFields = {};
+  if (role === "bidder") {
+    const id = String(idNumber ?? "").trim();
+    if (!/^[A-Za-z0-9]{6,12}$/.test(id)) {
+      return res.status(400).json({ message: "Enter a valid national ID or passport number" });
+    }
+    if (acceptTerms !== true) {
+      return res.status(400).json({ message: "You must accept the auction terms to register" });
+    }
+    bidderFields.idNumber = id;
+    bidderFields.termsAcceptedAt = new Date();
+  }
+
   if (await User.findOne({ email })) {
     return res.status(409).json({ message: "Email already registered" });
   }
 
-  const user = await User.create({ name, email, password, role, phone, organization });
+  const user = await User.create({ name, email, password, role, phone, organization, ...bidderFields });
   res.status(201).json({ token: signToken(user), user: userPayload(user) });
 });
 

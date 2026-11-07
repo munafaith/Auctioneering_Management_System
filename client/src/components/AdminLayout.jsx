@@ -19,6 +19,7 @@ export default function AdminLayout({ children }) {
           <span className={soon}>Lots &amp; Auctions (soon)</span>
           
           <NavLink to="/admin/monitor" className={active}>Bidding Monitor</NavLink>
+          <NavLink to="/admin/bidders" className={active}>Bidders</NavLink>
           <NavLink to="/admin/settlement" className={active}>Settlement &amp; Handover</NavLink>
           <span className={soon}>Reports (soon)</span>
         </nav>

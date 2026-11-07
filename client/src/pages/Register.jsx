@@ -7,19 +7,22 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    role: "bidder", name: "", email: "", phone: "", organization: "", password: "",
+    role: "bidder", name: "", email: "", phone: "", organization: "", idNumber: "", password: "",
   });
+  const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
+  const isBidder = form.role === "bidder";
 
   const submit = async (e) => {
     e.preventDefault();
     setError("");
     setBusy(true);
     try {
-      const user = await register(form);
+      const payload = isBidder ? { ...form, acceptTerms: accepted } : { ...form, idNumber: undefined };
+      const user = await register(payload);
       navigate(homeFor(user.role));
     } catch (err) {
       setError(err.message);
@@ -48,7 +51,7 @@ export default function Register() {
         <label className={label}>Full name</label>
         <input required value={form.name} onChange={set("name")} className={input} />
 
-        {form.role === "client" && (
+        {!isBidder && (
           <>
             <label className={label}>Organization</label>
             <input required value={form.organization} onChange={set("organization")} className={input} />
@@ -59,10 +62,39 @@ export default function Register() {
         <input type="email" required value={form.email} onChange={set("email")} className={input} />
 
         <label className={label}>Phone</label>
-        <input value={form.phone} onChange={set("phone")} className={input} />
+        <input required={isBidder} value={form.phone} onChange={set("phone")} className={input} />
+
+        {isBidder && (
+          <>
+            <label className={label}>National ID or passport number</label>
+            <input
+              required value={form.idNumber} onChange={set("idNumber")}
+              placeholder="6 to 12 letters or digits" className={input}
+            />
+          </>
+        )}
 
         <label className={label}>Password (6+ characters)</label>
         <input type="password" required minLength={6} value={form.password} onChange={set("password")} className={input} />
+
+        {isBidder && (
+          <div className="mb-4 rounded border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+            <p className="mb-1 font-semibold text-slate-800">Auction terms</p>
+            <ul className="mb-2 list-disc space-y-1 pl-4">
+              <li>Every bid you place is binding.</li>
+              <li>Assets are sold as seen, where they are.</li>
+              <li>The winning bidder pays the full amount to the auction firm before collecting the asset.</li>
+              <li>Your account must be verified by the firm before you can bid.</li>
+            </ul>
+            <label className="flex items-start gap-2">
+              <input
+                type="checkbox" required checked={accepted}
+                onChange={(e) => setAccepted(e.target.checked)} className="mt-0.5"
+              />
+              <span>I have read and accept the auction terms.</span>
+            </label>
+          </div>
+        )}
 
         <button
           disabled={busy}

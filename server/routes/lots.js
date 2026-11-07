@@ -118,6 +118,11 @@ router.get("/:id/bids", async (req, res) => {
 
 router.post("/:id/bids", protect, restrictTo("bidder"), async (req, res) => {
   const lotId = req.params.id;
+    if (!req.user.isVerified) {
+    return res.status(403).json({
+      message: "Your account is awaiting verification by the auction firm. You can bid once it is approved.",
+    });
+  }
   if (!mongoose.isValidObjectId(lotId)) {
     return res.status(400).json({ message: "Invalid lot id" });
   }

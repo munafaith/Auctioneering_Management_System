@@ -10,6 +10,7 @@ app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.use("/api/settlement", require("./routes/settlement"));
 app.use("/api/monitor", require("./routes/monitor"));
+app.use("/api/bidders", require("./routes/bidders"));
 
 // Express and Socket.IO share one HTTP server
 const server = http.createServer(app);

@@ -1,9 +1,25 @@
+import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import { homeFor } from "../ProtectedRoute";
 
 export default function PublicLayout({ children }) {
-  const { user, logout } = useAuth();
+  const { user, logout, refresh } = useAuth();
+  const [checking, setChecking] = useState(false);
+  const [stillPending, setStillPending] = useState(false);
+
+  const pending = user?.role === "bidder" && !user.isVerified;
+
+  const check = async () => {
+    setChecking(true);
+    try {
+      const u = await refresh();
+      setStillPending(!u.isVerified);
+    } finally {
+      setChecking(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b bg-white">
@@ -37,6 +53,26 @@ export default function PublicLayout({ children }) {
           </div>
         </div>
       </header>
+
+      {pending && (
+        <div className="border-b border-amber-200 bg-amber-50">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-3 text-sm text-amber-900">
+            <p>
+              <span className="font-semibold">Your account is awaiting verification.</span>{" "}
+              You can browse lots now, and bid as soon as the auction firm approves your account.
+              {stillPending && <span className="ml-2 font-semibold">Still pending.</span>}
+            </p>
+            <button
+              onClick={check}
+              disabled={checking}
+              className="rounded border border-amber-400 px-3 py-1 font-semibold transition hover:bg-amber-900 hover:text-white disabled:opacity-60"
+            >
+              {checking ? "Checking..." : "Check status"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
     </div>
   );

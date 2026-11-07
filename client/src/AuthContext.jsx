@@ -34,13 +34,20 @@ export function AuthProvider({ children }) {
     return d.user;
   };
 
+  // Re-reads the user from the server (used to pick up a newly granted verification)
+  const refresh = async () => {
+    const d = await api("/auth/me");
+    setUser(d.user);
+    return d.user;
+  };
+
   const logout = () => {
     clearToken();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, refresh, logout }}>
       {children}
     </AuthContext.Provider>
   );

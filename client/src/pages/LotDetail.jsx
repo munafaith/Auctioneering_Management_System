@@ -214,7 +214,15 @@ export default function LotDetail() {
               </p>
             )}
 
-            {isOpen && user?.role === "bidder" && (
+            {isOpen && user?.role === "bidder" && !user.isVerified && (
+              <p className="rounded bg-amber-50 p-3 text-sm text-amber-800">
+                Your account is awaiting verification by the auction firm. You can bid on this lot as soon as it
+                is approved. Use "Check status" at the top of the page to see if you have been verified.
+              </p>
+            )}
+
+            {isOpen && user?.role === "bidder" && user.isVerified && (
+              
               <form onSubmit={placeBid}>
                 <p className="mb-2 text-sm font-medium text-slate-700">Your next bid</p>
                 <div className="mb-3 grid grid-cols-3 gap-2">
