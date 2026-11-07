@@ -39,6 +39,7 @@ const instructionSchema = new mongoose.Schema(
     loanBalance: { type: Number, required: true },
     proposedReserve: { type: Number, required: true },
     documents: [documentSchema],
+    photos: [{ _id: false, filename: String, originalName: String, size: Number }],
 
     // Admin determination (filled in during review, Screen 2)
     approvedReserve: Number,

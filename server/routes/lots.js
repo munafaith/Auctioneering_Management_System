@@ -5,6 +5,7 @@ const Bid = require("../models/Bid");
 const User = require("../models/User");
 const Counter = require("../models/Counter");
 const { protect, restrictTo } = require("../middleware/auth");
+const path = require("path");
 
 const router = express.Router();
 
@@ -32,6 +33,7 @@ const publicLot = (c) => ({
   minIncrement: c.minIncrement,
   currentBid: c.currentBid,
   bidCount: c.bidCount,
+  photos: (c.photos || []).map((p) => p.filename),
   leadingBidderNo: c.leadingBidder?.bidderNo,
   winningBid: c.winningBid,
 });
@@ -189,6 +191,22 @@ router.post("/:id/bids", protect, restrictTo("bidder"), async (req, res) => {
   req.app.get("io").to(`lot:${lotId}`).emit("bid:new", payload);
 
   res.status(201).json({ ...payload, bidderNo });
+});
+
+// ---------- Public: a photo, only for lots that are public ----------
+router.get("/:id/photos/:filename", async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) {
+    return res.status(400).json({ message: "Invalid lot id" });
+  }
+  const c = await Instruction.findOne({
+    _id: req.params.id,
+    status: { $in: DETAIL_STATUSES },
+    "photos.filename": req.params.filename,
+  }).select("_id");
+  if (!c) return res.status(404).json({ message: "Photo not found" });
+
+  res.set("Cache-Control", "public, max-age=3600");
+  res.sendFile(path.join(__dirname, "..", "uploads", "photos", path.basename(req.params.filename)));
 });
 
 module.exports = router;

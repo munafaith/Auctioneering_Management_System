@@ -7,6 +7,8 @@ const { protect, restrictTo } = require("../middleware/auth");
 const upload = require("../middleware/upload");
 const nextCaseRef = require("../utils/caseRef");
 const nextLotNumber = require("../utils/lotNumber");
+const fs = require("fs");
+const photoUpload = require("../middleware/photoUpload");
 
 const router = express.Router();
 
@@ -243,6 +245,79 @@ router.patch("/:id/schedule", protect, restrictTo("admin"), validId, async (req,
     });
   }
   res.json({ instruction });
+});
+
+// ---------- Lot photos ----------
+const PHOTO_DIR = path.join(__dirname, "..", "uploads", "photos");
+const PHOTO_STATUSES = ["submitted", "under_review", "scheduled"]; // locked once bidding opens
+const MAX_PHOTOS = 8;
+
+const dropFiles = (files) => (files || []).forEach((f) => fs.unlink(f.path, () => {}));
+
+// Admin adds photos
+router.post(
+  "/:id/photos",
+  protect, restrictTo("admin"), validId, photoUpload.array("photos", MAX_PHOTOS),
+  async (req, res) => {
+    const files = req.files ?? [];
+    if (files.length === 0) return res.status(400).json({ message: "Choose at least one photo" });
+
+    const current = await Instruction.findOne({ _id: req.params.id, status: { $in: PHOTO_STATUSES } });
+    if (!current) {
+      dropFiles(files);
+      return res.status(409).json({ message: "Photos can only be changed before bidding opens" });
+    }
+    if (current.photos.length + files.length > MAX_PHOTOS) {
+      dropFiles(files);
+      return res.status(400).json({ message: `A lot can have at most ${MAX_PHOTOS} photos` });
+    }
+
+    const updated = await Instruction.findOneAndUpdate(
+      { _id: req.params.id, status: { $in: PHOTO_STATUSES } },
+      {
+        $push: {
+          photos: {
+            $each: files.map((f) => ({ filename: f.filename, originalName: f.originalname, size: f.size })),
+          },
+        },
+      },
+      { new: true }
+    );
+    if (!updated) {
+      dropFiles(files);
+      return res.status(409).json({ message: "Photos can only be changed before bidding opens" });
+    }
+    res.status(201).json({ photos: updated.photos });
+  }
+);
+
+// Admin removes a photo
+router.delete("/:id/photos/:filename", protect, restrictTo("admin"), validId, async (req, res) => {
+  const updated = await Instruction.findOneAndUpdate(
+    { _id: req.params.id, status: { $in: PHOTO_STATUSES }, "photos.filename": req.params.filename },
+    { $pull: { photos: { filename: req.params.filename } } },
+    { new: true }
+  );
+  if (!updated) {
+    return res.status(409).json({ message: "Photo not found, or photos are locked once bidding opens" });
+  }
+  fs.unlink(path.join(PHOTO_DIR, path.basename(req.params.filename)), () => {});
+  res.json({ photos: updated.photos });
+});
+
+// Admin (or the client who owns the case) views a photo, even before the lot is public
+router.get("/:id/photos/:filename", protect, validId, async (req, res) => {
+  const c = await Instruction.findById(req.params.id);
+  if (!c) return res.status(404).json({ message: "Case not found" });
+
+  const isOwner = c.client.equals(req.user._id);
+  if (req.user.role !== "admin" && !isOwner) {
+    return res.status(403).json({ message: "You do not have permission" });
+  }
+  const photo = c.photos.find((p) => p.filename === req.params.filename);
+  if (!photo) return res.status(404).json({ message: "Photo not found" });
+
+  res.sendFile(path.join(PHOTO_DIR, photo.filename));
 });
 
 module.exports = router;

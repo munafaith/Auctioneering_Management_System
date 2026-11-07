@@ -6,7 +6,7 @@ import StatusBadge from "../components/StatusBadge";
 import DateTimeField from "../components/DateTimeField";
 import { kes, categoryLabel, dateTime } from "../utils";
 import BidHistory from "../components/BidHistory";
-
+import PhotoManager from "../components/PhotoManager";
 
 const docLabel = {
   repossession_warrant: "Repossession Warrant",
@@ -206,6 +206,14 @@ export default function CaseReview() {
               </li>
             ))}
           </ul>
+
+
+          <PhotoManager
+            caseId={id}
+            photos={c.photos || []}
+            editable={["submitted", "under_review", "scheduled"].includes(c.status)}
+            onChange={(photos) => setC((prev) => ({ ...prev, photos }))}
+          />
         </section>
 
         <aside className="h-fit rounded-xl border bg-white p-6">

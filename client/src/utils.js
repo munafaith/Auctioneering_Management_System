@@ -31,3 +31,6 @@ export const dateTimeSeconds = (d) =>
   new Date(d).toLocaleString("en-US", {
     month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
   });
+
+  // Where a public lot photo can be loaded from
+export const photoUrl = (lotId, filename) => `/api/lots/${lotId}/photos/${filename}`;

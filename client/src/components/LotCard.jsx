@@ -1,16 +1,28 @@
 import { Link } from "react-router-dom";
-import { kes, categoryLabel, dateTimeShort } from "../utils";
+import { kes, categoryLabel, dateTimeShort, photoUrl } from "../utils";
 import Countdown from "./Countdown";
 
 export default function LotCard({ lot, offset }) {
   const live = lot.status === "live";
   const hasBids = live && lot.currentBid > 0;
   const price = hasBids ? lot.currentBid : lot.startingBid;
+  const cover = lot.photos?.[0];
 
   return (
     <div className="flex flex-col overflow-hidden rounded-xl border bg-white">
-      <div className="relative flex h-44 items-center justify-center bg-slate-200 text-sm text-slate-500">
-        {categoryLabel[lot.category]} photo
+      <div className="relative h-44 bg-slate-200">
+        {cover ? (
+          <img
+            src={photoUrl(lot.id, cover)}
+            alt={lot.description}
+            loading="lazy"
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center text-sm text-slate-500">
+            {categoryLabel[lot.category]} photo
+          </div>
+        )}
         <span
           className={`absolute left-3 top-3 rounded px-2 py-0.5 text-xs font-bold ${
             live ? "bg-red-600 text-white" : "bg-amber-400 text-slate-900"

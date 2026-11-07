@@ -6,6 +6,7 @@ import { useAuth } from "../AuthContext";
 import PublicLayout from "../components/PublicLayout";
 import Countdown from "../components/Countdown";
 import { kes, categoryLabel, dateTime, timeOnly } from "../utils";
+import Gallery from "../components/Gallery";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
 
@@ -138,9 +139,7 @@ export default function LotDetail() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          <div className="flex h-72 items-center justify-center rounded-xl bg-slate-200 text-slate-500">
-            {categoryLabel[lot.category]} photo
-          </div>
+          <Gallery lotId={lot.id} photos={lot.photos} label={`${categoryLabel[lot.category]} photo`} />
           <section className="rounded-xl border bg-white p-6">
             <h2 className="mb-4 font-semibold text-slate-900">Asset details</h2>
             <div className="grid gap-x-8 sm:grid-cols-2">
