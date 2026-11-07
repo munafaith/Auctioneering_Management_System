@@ -53,7 +53,23 @@ const instructionSchema = new mongoose.Schema(
     leadingBidder: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     winner: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     winningBid: Number,
-
+    
+    payment: {
+      method: String,
+      reference: String,
+      amount: Number,
+      receivedAt: Date,
+      proof: { originalName: String, filename: String, size: Number },
+      recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    },
+    handover: {
+      date: Date,
+      collectorName: String,
+      collectorId: String,
+      notes: String,
+      signedForm: { originalName: String, filename: String, size: Number },
+      recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    },
 
   },
   { timestamps: true }

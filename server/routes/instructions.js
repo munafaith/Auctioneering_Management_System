@@ -66,7 +66,9 @@ router.post("/", protect, restrictTo("client"), docFields, async (req, res) => {
 
 // Client sees only their own cases (the tracker on Screen 6)
 router.get("/mine", protect, restrictTo("client"), async (req, res) => {
-  const instructions = await Instruction.find({ client: req.user._id }).sort({ createdAt: -1 });
+  const instructions = await Instruction.find({ client: req.user._id })
+    .populate("winner", "name")
+    .sort({ createdAt: -1 });
   res.json({ instructions });
 });
 
