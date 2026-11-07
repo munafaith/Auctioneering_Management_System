@@ -5,6 +5,8 @@ import AdminLayout from "../components/AdminLayout";
 import StatusBadge from "../components/StatusBadge";
 import DateTimeField from "../components/DateTimeField";
 import { kes, categoryLabel, dateTime } from "../utils";
+import BidHistory from "../components/BidHistory";
+
 
 const docLabel = {
   repossession_warrant: "Repossession Warrant",
@@ -42,10 +44,12 @@ export default function CaseReview() {
   const [reason, setReason] = useState("");
   const [editing, setEditing] = useState(false);
   const [edit, setEdit] = useState({});
+  const [offset, setOffset] = useState(0);
 
   const load = async () => {
-    const { instruction } = await api(`/instructions/${id}`);
+    const { instruction, serverTime } = await api(`/instructions/${id}`);
     setC(instruction);
+    if (serverTime) setOffset(new Date(serverTime) - Date.now());
     return instruction;
   };
 
@@ -337,6 +341,14 @@ export default function CaseReview() {
           )}
         </aside>
       </div>
+      <BidHistory
+        id={id}
+        status={c.status}
+        closesAt={c.auctionEnd}
+        offset={offset}
+        onLotStatus={load}
+      />
+      
     </AdminLayout>
   );
 }

@@ -11,6 +11,7 @@ import AdminHome from "./pages/AdminHome";
 import CaseReview from "./pages/CaseReview";
 import Settlement from "./pages/Settlement";
 import SettlementCase from "./pages/SettlementCase";
+import BiddingMonitor from "./pages/BiddingMonitor";
 
 export default function App() {
   return (
@@ -39,6 +40,11 @@ export default function App() {
         path="/admin/cases/:id"
         element={<ProtectedRoute roles={["admin"]}><CaseReview /></ProtectedRoute>}
       />
+      <Route
+        path="/admin/monitor"
+        element={<ProtectedRoute roles={["admin"]}><BiddingMonitor /></ProtectedRoute>}
+      />
+
       <Route
         path="/admin/settlement"
         element={<ProtectedRoute roles={["admin"]}><Settlement /></ProtectedRoute>}

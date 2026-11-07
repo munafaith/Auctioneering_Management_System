@@ -24,3 +24,10 @@ export const timeOnly = (d) =>
   new Date(d).toLocaleTimeString("en-US", {
     hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
   });
+
+
+  // e.g. "Nov 7, 10:42:15 AM" (used where bids can land within the same minute)
+export const dateTimeSeconds = (d) =>
+  new Date(d).toLocaleString("en-US", {
+    month: "short", day: "numeric", hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
+  });

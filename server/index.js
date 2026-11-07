@@ -9,6 +9,7 @@ const app = express();
 app.use(cors({ origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.use("/api/settlement", require("./routes/settlement"));
+app.use("/api/monitor", require("./routes/monitor"));
 
 // Express and Socket.IO share one HTTP server
 const server = http.createServer(app);

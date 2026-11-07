@@ -105,7 +105,7 @@ router.get("/:id", protect, validId, async (req, res) => {
   if (req.user.role !== "admin" && !isOwner) {
     return res.status(403).json({ message: "You do not have permission" });
   }
-  res.json({ instruction });
+  res.json({ instruction, serverTime: new Date() });
 });
 
 // Admin opens a case for review: submitted becomes under_review
