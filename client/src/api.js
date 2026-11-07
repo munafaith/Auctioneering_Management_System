@@ -38,3 +38,18 @@ export async function downloadDocument(caseId, filename, originalName) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+// Download a payment proof or signed handover form (admin only, needs the login token)
+export async function downloadSettlementFile(caseId, filename, originalName) {
+  const res = await fetch(`/api/settlement/${caseId}/files/${filename}`, {
+    headers: { Authorization: `Bearer ${getToken()}` },
+  });
+  if (!res.ok) throw new Error("Could not open the file");
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = originalName;
+  a.click();
+  URL.revokeObjectURL(url);
+}

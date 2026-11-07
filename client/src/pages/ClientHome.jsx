@@ -5,6 +5,37 @@ import ClientLayout from "../components/ClientLayout";
 import StatusBadge from "../components/StatusBadge";
 import { kes, shortDate, categoryLabel } from "../utils";
 
+function Outcome({ c }) {
+  const sold = ["closed", "payment_cleared", "completed"].includes(c.status);
+
+  if (sold) {
+    const note =
+      c.status === "closed"
+        ? "Awaiting payment from the buyer"
+        : c.status === "payment_cleared"
+        ? "Payment received, awaiting handover"
+        : "Payment received, asset handed over";
+    return (
+      <>
+        <p className="font-semibold text-slate-900">Sold for {kes(c.winningBid)}</p>
+        {c.winner?.name && <p className="text-xs text-slate-500">Buyer: {c.winner.name}</p>}
+        <p className="text-xs text-slate-500">{note}</p>
+      </>
+    );
+  }
+  if (c.status === "unsold") {
+    return <p className="text-slate-500">Closed with no bids, not sold</p>;
+  }
+  if (c.status === "live") {
+    return (
+      <p className="text-slate-700">
+        {c.bidCount > 0 ? `Current bid ${kes(c.currentBid)} (${c.bidCount} bids)` : "Open for bidding, no bids yet"}
+      </p>
+    );
+  }
+  return <p className="text-slate-400">-</p>;
+}
+
 export default function ClientHome() {
   const location = useLocation();
   const [cases, setCases] = useState([]);
@@ -45,16 +76,17 @@ export default function ClientHome() {
               <th className="p-4">Asset</th>
               <th className="p-4">Reserve (KES)</th>
               <th className="p-4">Status</th>
+              <th className="p-4">Outcome</th>
               <th className="p-4">Submitted</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan="5" className="p-6 text-slate-500">Loading...</td></tr>
+              <tr><td colSpan="6" className="p-6 text-slate-500">Loading...</td></tr>
             )}
             {!loading && cases.length === 0 && (
               <tr>
-                <td colSpan="5" className="p-6 text-slate-500">
+                <td colSpan="6" className="p-6 text-slate-500">
                   No instructions yet. <Link to="/client/new" className="font-semibold text-slate-900">Submit your first one.</Link>
                 </td>
               </tr>
@@ -73,6 +105,7 @@ export default function ClientHome() {
                     <p className="mt-1 text-xs text-red-600">{c.rejectionReason}</p>
                   )}
                 </td>
+                <td className="p-4"><Outcome c={c} /></td>
                 <td className="p-4 text-slate-500">{shortDate(c.createdAt)}</td>
               </tr>
             ))}

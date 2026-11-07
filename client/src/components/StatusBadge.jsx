@@ -5,6 +5,7 @@ const styles = {
   scheduled: ["Scheduled", "bg-indigo-50 text-indigo-700"],
   live: ["Live bidding", "bg-green-50 text-green-700"],
   closed: ["Awaiting payment", "bg-orange-50 text-orange-700"],
+  unsold: ["Unsold", "bg-slate-100 text-slate-600"],
   payment_cleared: ["Handover due", "bg-purple-50 text-purple-700"],
   handed_over: ["Handed over", "bg-slate-100 text-slate-700"],
   completed: ["Completed", "bg-slate-100 text-slate-700"],

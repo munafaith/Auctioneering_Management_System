@@ -11,6 +11,9 @@ export default function PublicLayout({ children }) {
           <Link to="/" className="text-xl font-bold text-slate-900">LotLink</Link>
           <nav className="hidden gap-6 text-sm font-medium sm:flex">
             <NavLink to="/" end className="text-slate-900">Browse Auctions</NavLink>
+            {user?.role === "bidder" && (
+              <NavLink to="/my-wins" className="text-slate-900">My Wins</NavLink>
+            )}
             <span className="cursor-not-allowed text-slate-400">Past Results</span>
             <span className="cursor-not-allowed text-slate-400">How It Works</span>
           </nav>

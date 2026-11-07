@@ -279,9 +279,19 @@ export default function CaseReview() {
                   Edit schedule &amp; details
                 </button>
               ) : (
-                <p className="text-xs text-slate-500">
-                  The price rules and times are locked once bidding has opened.
-                </p>
+                
+                <div className="text-xs text-slate-500">
+                  <p>The price rules and times are locked once bidding has opened.</p>
+                  {["closed", "payment_cleared", "completed"].includes(c.status) && (
+                    <Link
+                      to={`/admin/settlement/${c._id}`}
+                      className="mt-3 block rounded bg-slate-900 p-2 text-center text-sm font-semibold text-white"
+                    >
+                      Open settlement &amp; handover
+                    </Link>
+                  )}
+                </div>
+
               )}
             </div>
           )}
