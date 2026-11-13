@@ -5,10 +5,10 @@ const { protect, restrictTo } = require("../middleware/auth");
 
 const router = express.Router();
 
-const SOLD = ["closed", "payment_cleared", "handed_over", "completed"];
+const SOLD = ["closed", "payment_cleared", "completed"];
 const STAGES = [
   "submitted", "under_review", "rejected", "scheduled", "live",
-  "closed", "unsold", "payment_cleared", "handed_over", "completed",
+  "closed", "unsold", "payment_cleared", "completed",
 ];
 
 // Summary figures for the admin Reports page
