@@ -6,6 +6,15 @@ const User = require("../models/User");
 const Counter = require("../models/Counter");
 const { protect, restrictTo } = require("../middleware/auth");
 const path = require("path");
+const createLimiter = require("../middleware/rateLimit");
+
+// A bidder cannot place more than 20 bids a minute
+const bidLimiter = createLimiter({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: "You are bidding too fast.",
+  key: (req) => String(req.user?._id ?? req.ip),
+});
 
 const router = express.Router();
 
@@ -147,7 +156,7 @@ router.get("/:id/bids", async (req, res) => {
 
 // ---------- Bidders only: place a bid ----------
 
-router.post("/:id/bids", protect, restrictTo("bidder"), async (req, res) => {
+router.post("/:id/bids", protect, restrictTo("bidder"), bidLimiter.all, async (req, res) => {
   const lotId = req.params.id;
     if (!req.user.isVerified) {
     return res.status(403).json({

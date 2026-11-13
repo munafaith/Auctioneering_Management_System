@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
     staffTitle: { type: String, trim: true },   // admins: Valuer, Finance Officer, etc.
     isVerified: { type: Boolean, default: false }, // bidders get verified by an admin
     bidderNo: Number, // public alias number, shown as "Bidder #101"  
+    idType: { type: String, enum: ["national_id", "passport"] },
     idNumber: { type: String, trim: true },  // bidders: national ID or passport, checked during verification
     termsAcceptedAt: Date,
   },

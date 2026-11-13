@@ -31,8 +31,30 @@ router.post("/", protect, restrictTo("client"), docFields, async (req, res) => {
   const { category, description, registration, yardLocation, loanBalance, proposedReserve } =
     req.body ?? {};
 
+  // Refuses the request and removes any files that came with it
+  const refuseNew = (message) => {
+    for (const files of Object.values(req.files ?? {})) {
+      for (const f of files) fs.unlink(f.path, () => {});
+    }
+    return res.status(400).json({ message });
+  };
+
   if (!category || !description || !yardLocation || !loanBalance || !proposedReserve) {
-    return res.status(400).json({ message: "Please fill in all required asset details" });
+    return refuseNew("Please fill in all required asset details");
+  }
+  if (![description, yardLocation, category].every((v) => typeof v === "string")) {
+    return refuseNew("Invalid asset details");
+  }
+  if (!["motor_vehicle", "machinery", "real_estate", "industrial_equipment"].includes(category)) {
+    return refuseNew("Choose a valid asset category");
+  }
+  if (description.length > 300 || yardLocation.length > 150 || String(registration ?? "").length > 20) {
+    return refuseNew("One of the text fields is too long");
+  }
+  const loan = Number(loanBalance);
+  const reserve = Number(proposedReserve);
+  if (!Number.isFinite(loan) || loan <= 0 || !Number.isFinite(reserve) || reserve <= 0) {
+    return refuseNew("Loan balance and proposed reserve must be positive amounts");
   }
 
   const documents = [];
@@ -47,7 +69,7 @@ router.post("/", protect, restrictTo("client"), docFields, async (req, res) => {
     }
   }
   if (!documents.some((d) => d.type === "repossession_warrant")) {
-    return res.status(400).json({ message: "A repossession warrant or court order is required" });
+    return refuseNew("A repossession warrant or court order is required");
   }
 
   const instruction = await Instruction.create({

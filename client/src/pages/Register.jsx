@@ -7,7 +7,7 @@ export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    role: "bidder", name: "", email: "", phone: "", organization: "", idNumber: "", password: "",
+    role: "bidder", name: "", email: "", phone: "", organization: "", idType: "national_id", idNumber: "", password: "",
   });
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
@@ -21,7 +21,7 @@ export default function Register() {
     setError("");
     setBusy(true);
     try {
-      const payload = isBidder ? { ...form, acceptTerms: accepted } : { ...form, idNumber: undefined };
+      const payload = isBidder ? { ...form, acceptTerms: accepted } : { ...form, idNumber: undefined, idType: undefined };
       const user = await register(payload);
       navigate(homeFor(user.role));
     } catch (err) {
@@ -30,6 +30,14 @@ export default function Register() {
       setBusy(false);
     }
   };
+
+  // Kenyan national IDs are 7 or 8 digits. Passports mix letters and digits.
+  const isPassport = form.idType === "passport";
+  const idRule = isPassport
+    ? { pattern: "[A-Za-z0-9]{6,9}", title: "Passport number: 6 to 9 letters or digits", hint: "6 to 9 letters or digits, e.g. A1234567" }
+    : { pattern: "[0-9]{7,8}", title: "National ID: 7 or 8 digits only", hint: "7 or 8 digits only" };
+  const passwordTitle =
+    "Password should be 6 characters or more and include uppercase, lowercase, a number and a special character";
 
   const input = "mb-4 mt-1 w-full rounded border border-slate-300 p-2";
   const label = "block text-sm font-medium text-slate-700";
@@ -66,16 +74,35 @@ export default function Register() {
 
         {isBidder && (
           <>
-            <label className={label}>National ID or passport number</label>
+            <label className={label}>ID type</label>
+            <select
+              value={form.idType}
+              onChange={(e) => setForm({ ...form, idType: e.target.value, idNumber: "" })}
+              className={input}
+            >
+              <option value="national_id">National ID (Kenyan citizens)</option>
+              <option value="passport">Passport</option>
+            </select>
+
+            <label className={label}>{isPassport ? "Passport number" : "National ID number"}</label>
             <input
               required value={form.idNumber} onChange={set("idNumber")}
-              placeholder="6 to 12 letters or digits" className={input}
+              pattern={idRule.pattern} title={idRule.title}
+              inputMode={isPassport ? "text" : "numeric"}
+              placeholder={idRule.hint} className={input}
             />
           </>
         )}
 
-        <label className={label}>Password (6+ characters)</label>
-        <input type="password" required minLength={6} value={form.password} onChange={set("password")} className={input} />
+        <label className={label}>Password</label>
+        <input
+          type="password" required value={form.password} onChange={set("password")}
+          pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{6,72}"
+          title={passwordTitle} className="mt-1 w-full rounded border border-slate-300 p-2"
+        />
+        <p className="mb-4 mt-1 text-xs text-slate-500">
+          At least 6 characters, with uppercase, lowercase, a number and a special character.
+        </p>
 
         {isBidder && (
           <div className="mb-4 rounded border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">

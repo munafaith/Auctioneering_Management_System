@@ -86,7 +86,7 @@ function wipeFolder(dir) {
   let bn = 100;
   const mkBidder = (name, email, idNumber, verified, phone) =>
     User.create({
-      name, email, password: PASS, role: "bidder", phone, idNumber, isVerified: verified,
+      name, email, password: PASS, role: "bidder", phone, idType: "national_id", idNumber, isVerified: verified,
       termsAcceptedAt: new Date(), ...(verified ? { bidderNo: ++bn } : {}),
     });
   const david = await mkBidder("David Otieno", "david@lotlink.test", "28451907", true, "0711000001");

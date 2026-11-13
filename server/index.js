@@ -5,9 +5,23 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const { Server } = require("socket.io");
 
+if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 16) {
+  console.error("JWT_SECRET is missing or too short (use at least 16 characters). Check server/.env");
+  process.exit(1);
+}
+
 const app = express();
+app.disable("x-powered-by");
+app.use((req, res, next) => {
+  res.set({
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "DENY",
+    "Referrer-Policy": "no-referrer",
+  });
+  next();
+});
 app.use(cors({ origin: process.env.CLIENT_URL }));
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 app.use("/api/settlement", require("./routes/settlement"));
 app.use("/api/monitor", require("./routes/monitor"));
 app.use("/api/bidders", require("./routes/bidders"));
