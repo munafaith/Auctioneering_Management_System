@@ -13,12 +13,16 @@ import Settlement from "./pages/Settlement";
 import SettlementCase from "./pages/SettlementCase";
 import BiddingMonitor from "./pages/BiddingMonitor";
 import Bidders from "./pages/Bidders";
+import PastResults from "./pages/PastResults";
+import HowItWorks from "./pages/HowItWorks";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/lots/:id" element={<LotDetail />} />
+      <Route path="/results" element={<PastResults />} />
+      <Route path="/how-it-works" element={<HowItWorks />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route

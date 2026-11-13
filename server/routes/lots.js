@@ -88,6 +88,35 @@ router.get("/", async (req, res) => {
   res.json({ serverTime: new Date(), lots: lots.map(publicLot) });
 });
 
+// ---------- Public: past results (winner shown as an alias number only) ----------
+router.get("/results", async (req, res) => {
+  const lots = await Instruction.find({
+    status: { $in: ["closed", "unsold", "payment_cleared", "handed_over", "completed"] },
+  })
+    .populate("client", "organization")
+    .populate("winner", "bidderNo")
+    .sort({ auctionEnd: -1 })
+    .limit(50);
+
+  res.json({
+    results: lots.map((c) => ({
+      id: c._id,
+      lotNumber: c.lotNumber,
+      category: c.category,
+      description: c.description,
+      registration: c.registration,
+      seller: c.client?.organization || "Private seller",
+      endedAt: c.auctionEnd,
+      startingBid: c.approvedReserve,
+      sold: c.status !== "unsold",
+      finalPrice: c.status !== "unsold" ? c.winningBid : null,
+      bidCount: c.bidCount,
+      winnerNo: c.status !== "unsold" ? c.winner?.bidderNo : null,
+      photo: c.photos?.[0]?.filename || null,
+    })),
+  });
+});
+
 router.get("/:id", async (req, res) => {
   if (!mongoose.isValidObjectId(req.params.id)) {
     return res.status(400).json({ message: "Invalid lot id" });

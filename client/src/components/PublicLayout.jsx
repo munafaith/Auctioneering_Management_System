@@ -30,8 +30,8 @@ export default function PublicLayout({ children }) {
             {user?.role === "bidder" && (
               <NavLink to="/my-wins" className="text-slate-900">My Wins</NavLink>
             )}
-            <span className="cursor-not-allowed text-slate-400">Past Results</span>
-            <span className="cursor-not-allowed text-slate-400">How It Works</span>
+            <NavLink to="/results" className="text-slate-900">Past Results</NavLink>
+            <NavLink to="/how-it-works" className="text-slate-900">How It Works</NavLink>
           </nav>
           <div className="flex items-center gap-3 text-sm">
             {user ? (
