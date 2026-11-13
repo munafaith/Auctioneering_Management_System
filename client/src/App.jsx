@@ -15,6 +15,7 @@ import BiddingMonitor from "./pages/BiddingMonitor";
 import Bidders from "./pages/Bidders";
 import PastResults from "./pages/PastResults";
 import HowItWorks from "./pages/HowItWorks";
+import Reports from "./pages/Reports";
 
 export default function App() {
   return (
@@ -55,6 +56,10 @@ export default function App() {
         element={<ProtectedRoute roles={["admin"]}><Bidders /></ProtectedRoute>}
       />
       
+      <Route
+        path="/admin/reports"
+        element={<ProtectedRoute roles={["admin"]}><Reports /></ProtectedRoute>}
+      />
       <Route
         path="/admin/settlement"
         element={<ProtectedRoute roles={["admin"]}><Settlement /></ProtectedRoute>}

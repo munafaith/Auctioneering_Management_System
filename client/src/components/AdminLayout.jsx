@@ -5,7 +5,6 @@ const active = ({ isActive }) =>
   `block rounded px-3 py-2 text-sm font-medium ${
     isActive ? "bg-slate-700 text-white" : "text-slate-300 hover:bg-slate-800"
   }`;
-const soon = "block cursor-not-allowed rounded px-3 py-2 text-sm text-slate-500";
 
 export default function AdminLayout({ children }) {
   const { user, logout } = useAuth();
@@ -16,12 +15,10 @@ export default function AdminLayout({ children }) {
         <p className="mb-8 text-xs text-slate-400">Admin Console</p>
         <nav className="space-y-1">
           <NavLink to="/admin" end className={active}>Case Instructions</NavLink>
-          <span className={soon}>Lots &amp; Auctions (soon)</span>
-          
           <NavLink to="/admin/monitor" className={active}>Bidding Monitor</NavLink>
           <NavLink to="/admin/bidders" className={active}>Bidders</NavLink>
           <NavLink to="/admin/settlement" className={active}>Settlement &amp; Handover</NavLink>
-          <span className={soon}>Reports (soon)</span>
+          <NavLink to="/admin/reports" className={active}>Reports</NavLink>
         </nav>
         <div className="mt-auto border-t border-slate-700 pt-4 text-sm">
           <p className="font-semibold text-white">{user.name}</p>

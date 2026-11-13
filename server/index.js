@@ -11,6 +11,7 @@ app.use(express.json());
 app.use("/api/settlement", require("./routes/settlement"));
 app.use("/api/monitor", require("./routes/monitor"));
 app.use("/api/bidders", require("./routes/bidders"));
+app.use("/api/reports", require("./routes/reports"));
 
 // Express and Socket.IO share one HTTP server
 const server = http.createServer(app);
